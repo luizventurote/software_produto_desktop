@@ -28,12 +28,32 @@ public class JanelaPrincipal extends javax.swing.JFrame {
      * Creates new form Principal
      */
     public JanelaPrincipal() {
-        initComponents();
-        // Adquando a Frame ao Tamanho e larguta da tela do monitos
-        this.setExtendedState(this.MAXIMIZED_BOTH);
         
-        // Aloca Uma janela de Cliente
-        janelaClientes = new JanelaClienteDialog(this, true);
+        // Tela de login
+        JanelaLoginDialog janela_login = new JanelaLoginDialog(this, true);
+        janela_login.setLocationRelativeTo(null);
+        janela_login.setVisible(true);
+        
+        // Verifica o acesso do login (1 - Login correto, 0 - Erro)
+        int acesso = janela_login.getAcessoLogin();
+        
+        if(acesso == 1) {
+            
+            // Starts Components
+            initComponents();
+
+            // Adquando a Frame ao Tamanho e larguta da tela do monitos
+            this.setExtendedState(this.MAXIMIZED_BOTH);
+
+            // Aloca Uma janela de Cliente
+            janelaClientes = new JanelaClienteDialog(this, true);
+            
+        } else {
+            // Fecha o sistema
+            System.exit(0);
+        }
+        
+        
     }
 
     /**

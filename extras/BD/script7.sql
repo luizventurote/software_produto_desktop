@@ -80,6 +80,16 @@ CREATE TABLE pedido_item(idPedido_item INTEGER PRIMARY KEY NOT NULL AUTO_INCREME
 						FOREIGN KEY(idProduto)
 						REFERENCES produto(idProduto) ON DELETE RESTRICT);
 
+CREATE TABLE IF NOT EXISTS vendedor (idVendedor INT NOT NULL AUTO_INCREMENT,
+									emailDestinoPedido VARCHAR(45) NOT NULL,
+									login VARCHAR(45) NOT NULL,
+									senha VARCHAR(45) NOT NULL,
+									nomeVendedor VARCHAR(45) NULL,
+									emailVendedor VARCHAR(45) NULL,
+									telFixoVendedor CHAR(15) NULL,
+									telCelVendedor CHAR(15) NULL,
+									PRIMARY KEY (idVendedor));
+
 
 /* inserção de dados*/
 
