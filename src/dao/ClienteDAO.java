@@ -190,5 +190,46 @@ public class ClienteDAO {
 
     public List pesquisar () {
         return null;
-    }      
+    } 
+    
+    /**
+     * Get object by ID
+     *
+     * @param id
+     * @return
+     * @throws Exception
+     * @throws SQLException
+     */
+    public Cliente get(int id) throws Exception, SQLException {
+
+        Session sessao = null;
+        Cliente comp = null;
+
+        try {
+
+            sessao = dao.HibernateUtil.getSessionFactory().openSession();
+
+            sessao.beginTransaction();
+
+            // HQL para recuperar o componente do banco de dados           
+            Query con = sessao.createQuery("FROM Cliente obj WHERE obj.id=" + id);
+
+            con.setMaxResults(1);
+
+            List<Cliente> result = con.list();
+
+            comp = result.get(0);
+
+            sessao.getTransaction().commit();
+
+        } catch (HibernateException he) {
+            sessao.getTransaction().rollback();
+        } finally {
+            if (sessao != null) {
+                sessao.close();
+            }
+            return comp;
+        }
+    }
+    
 }

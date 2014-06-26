@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package visao;
 
 import controlador.Controlador;
+import controlador.memento.ClienteExcluido;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -17,18 +17,25 @@ import negocio.Cliente;
  * @author Ruan
  */
 public class JanelaClientePesqDialog extends javax.swing.JDialog {
+
     Controlador control;
     Cliente cliSelecionado;
 
     /**
+     * Com essa variável é possivel recuperar um cliente que foi excluído
+     */
+    ClienteExcluido cliente_excluido;
+
+    /**
      * Creates new form JanelaClientePesqDialog
      */
-    public JanelaClientePesqDialog(java.awt.Dialog parent, boolean modal) throws Exception, SQLException  {
+    public JanelaClientePesqDialog(java.awt.Dialog parent, boolean modal) throws Exception, SQLException {
         super(parent, modal);
         initComponents();
-        
         control = Controlador.getInstance();
         cliSelecionado = null;
+
+        cliente_excluido = new ClienteExcluido();
     }
 
     /**
@@ -49,6 +56,7 @@ public class JanelaClientePesqDialog extends javax.swing.JDialog {
         btnCancelar = new javax.swing.JButton();
         btnExcluir = new javax.swing.JButton();
         btnSelecionar = new javax.swing.JButton();
+        btn_desfazer = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -103,6 +111,15 @@ public class JanelaClientePesqDialog extends javax.swing.JDialog {
             }
         });
 
+        btn_desfazer.setText("Desfazer Exclusão");
+        btn_desfazer.setToolTipText("");
+        btn_desfazer.setEnabled(false);
+        btn_desfazer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_desfazerActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -120,12 +137,14 @@ public class JanelaClientePesqDialog extends javax.swing.JDialog {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btn_desfazer)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnSelecionar)
-                .addGap(36, 36, 36)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnExcluir, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(32, 32, 32)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCancelar, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(38, 38, 38))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -141,7 +160,8 @@ public class JanelaClientePesqDialog extends javax.swing.JDialog {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancelar)
                     .addComponent(btnSelecionar)
-                    .addComponent(btnExcluir))
+                    .addComponent(btnExcluir)
+                    .addComponent(btn_desfazer))
                 .addContainerGap())
         );
 
@@ -153,14 +173,13 @@ public class JanelaClientePesqDialog extends javax.swing.JDialog {
     private void btnPesquisarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPesquisarActionPerformed
         try {
             // TODO add your handling code here:
-            control.pesquisarCliente(tblClientes, cmbTipo.getSelectedIndex(), txtPesq.getText() );
+            control.pesquisarCliente(tblClientes, cmbTipo.getSelectedIndex(), txtPesq.getText());
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "ERRO ao PESQUISAR no BANCO. " + ex.getMessage() );
+            JOptionPane.showMessageDialog(this, "ERRO ao PESQUISAR no BANCO. " + ex.getMessage());
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "ERRO ao PESQUISAR. " + ex.getMessage() );
+            JOptionPane.showMessageDialog(this, "ERRO ao PESQUISAR. " + ex.getMessage());
         }
-        
-      
+
 
     }//GEN-LAST:event_btnPesquisarActionPerformed
 
@@ -172,30 +191,38 @@ public class JanelaClientePesqDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_btnCancelarActionPerformed
 
     private void btnExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExcluirActionPerformed
-        // TODO add your handling code here:
 
-        try{
+        try {
             int linha = tblClientes.getSelectedRow();
-            if ( linha >= 0 ) {
+            if (linha >= 0) {
+
                 cliSelecionado = (Cliente) tblClientes.getValueAt(linha, 0);
-                control.excluirCliente(cliSelecionado);
+
+                /**
+                 * Adiciona cliente para área de recuperação
+                 */
+                cliente_excluido.addCliente(cliSelecionado);
+
+                btn_desfazer.setEnabled(true);
+
+                //control.excluirCliente(cliSelecionado);
                 ((DefaultTableModel) tblClientes.getModel()).removeRow(linha);
                 JOptionPane.showMessageDialog(this, "CLIENTE excluido.");
             } else {
                 JOptionPane.showMessageDialog(this, "Selecione um CLIENTE.");
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "ERRO ao EXCLUIR no BANCO. " + ex.getMessage() );
+            JOptionPane.showMessageDialog(this, "ERRO ao EXCLUIR no BANCO. " + ex.getMessage());
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "ERRO ao EXCLUIR. " + ex.getMessage() );
+            JOptionPane.showMessageDialog(this, "ERRO ao EXCLUIR. " + ex.getMessage());
         }
     }//GEN-LAST:event_btnExcluirActionPerformed
 
     private void btnSelecionarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelecionarActionPerformed
         // TODO add your handling code here:
-                
+
         int linha = tblClientes.getSelectedRow();
-        if ( linha >= 0 ) {
+        if (linha >= 0) {
             cliSelecionado = (Cliente) tblClientes.getValueAt(linha, 0);
             setVisible(false);
         } else {
@@ -203,6 +230,29 @@ public class JanelaClientePesqDialog extends javax.swing.JDialog {
         }
 
     }//GEN-LAST:event_btnSelecionarActionPerformed
+
+    private void btn_desfazerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_desfazerActionPerformed
+
+        try {
+
+            /**
+             * Desfaz a exclusão
+             */
+            Cliente cli_e = cliente_excluido.getCliente();
+            
+            System.out.println(cli_e.getNome());
+
+            /**
+             * O cliente é inserido novamente no banco
+             */
+//            control.inserirCliente(cli_e);
+//            JOptionPane.showMessageDialog(this, "Cliente restaurado!");
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage());
+        }
+
+    }//GEN-LAST:event_btn_desfazerActionPerformed
 
     public Cliente getCliente() {
         return cliSelecionado;
@@ -216,6 +266,7 @@ public class JanelaClientePesqDialog extends javax.swing.JDialog {
     private javax.swing.JButton btnExcluir;
     private javax.swing.JButton btnPesquisar;
     private javax.swing.JButton btnSelecionar;
+    private javax.swing.JButton btn_desfazer;
     private javax.swing.JComboBox cmbTipo;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
